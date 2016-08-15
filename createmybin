@@ -4,21 +4,19 @@
 # Also updates ~/.bash_profile with useful aliases and corrects $PATH.
 # Also checks and corrects user permissions for ~/.bin and ~/.bash_profile
 
-#get sudo upfront
-sudo -v
 echo ''
 echo 'please confirm your username I am pretty sure your are:' $USER 'but want to be sure'
 read $UNNAME
 # backup ~/.bin if it already exists
 
-test -d "/Users/$UNNAME/.bin" && sud mv /Users/$UNNAME/.bin /Users/$UNNAME/.bin_old && echo 'Backed up your old ~/.bin to ~/.bin_old' || echo 'No need to move old ~/.bin as it does not exist'
+test -d "/Users/$UNNAME/.bin" && sudo mv /Users/$UNNAME/.bin /Users/$UNNAME/.bin_old && echo 'Backed up your old ~/.bin to ~/.bin_old' || echo 'No need to move old ~/.bin as it does not exist'
 
 # pause for 2 seconds
 sleep 2
 
 # create new ~/.bin
 
-mkdir "/Users/$UNNAME/.bin"
+mkdir /Users/$UNNAME/.bin
 echo ''
 echo 'Copying the scripts to ~/.bin'
 sudo cp -a scripts/* /Users/$UNNAME/.bin/
@@ -43,10 +41,10 @@ sleep 2
 # Set correct permissions
 echo ''
 echo 'Setttng permissions so that $UNNAME is owner and can read, write and execute'
-sudo chown -R $UNNAME "/Users/$UNNAME/.bin"
-sudo chmod -R 750 "/Users/$UNNAME/.bin"
-sudo chown $UNNAME "/Users/$UNNAME/.bash_profile"
-sudo chmod 750 "/Users/$UNNAME/.bash_profile"
+sudo chown -R $UNNAME /Users/$UNNAME/.bin
+sudo chmod -R 750 /Users/$UNNAME/.bin
+sudo chown $UNNAME /Users/$UNNAME/.bash_profile
+sudo chmod 750 /Users/$UNNAME/.bash_profile
 echo ''
 sleep 2
 echo '***********************************************************************************'
