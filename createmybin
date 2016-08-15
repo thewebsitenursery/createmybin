@@ -5,21 +5,40 @@
 # Also checks and corrects user permissions for ~/.bin and ~/.bash_profile
 
 echo ''
-echo 'please confirm your username I am pretty sure your are:' $USER 'but want to be sure'
-read $UNNAME
-# backup ~/.bin if it already exists
+echo 'please confirm your username I am pretty sure your are:' "$(whoami)" 'is this correct?'
+echo ''
+echo 'Yes/No'
 
-test -d "/Users/$UNNAME/.bin" && sudo mv /Users/$UNNAME/.bin /Users/$UNNAME/.bin_old && echo 'Backed up your old ~/.bin to ~/.bin_old' || echo 'No need to move old ~/.bin as it does not exist'
+read -r response	# reads the yes or no answer
+if [[ $response =~ ^([nN][oO]|[nN])$ ]]; then	# If no then exit
+echo ''
+echo "Thats very odd, something needs fixing. Lets stop before things go tits up"
+echo ""
+sleep 2
+exit 2 >> /dev/null
+fi
+
+echo 'Thanks' "$(whoami)" 'Lets get a move on, we will need your password to fix permissions'
+  echo ""
+  sleep 1
+
+sudo chown "$(whoami)":staff $HOME/.bin*
+sudo chown "$(whoami)":staff $HOME/.bash_prof*
+sudo chmod -R 750 $HOME/.bin*
+sudo chmod 750 $HOME/.bash_pro*
+# backup ~/.bin if it already exists
+sudo rm -rf $HOME/.bin_old;
+sleep 1
+test -d "$HOME/.bin" && sleep 1 && sudo mv "$HOME/.bin" "$HOME/.bin_old" && echo 'Backed up your old ~/.bin to ~/.bin_old' || echo 'No need to move old ~/.bin as it does not exist'
 
 # pause for 2 seconds
 sleep 2
 
 # create new ~/.bin
-
-mkdir /Users/$UNNAME/.bin
+sudo mkdir $HOME/.bin
 echo ''
 echo 'Copying the scripts to ~/.bin'
-sudo cp -a scripts/* /Users/$UNNAME/.bin/
+sudo cp -a scripts/* $HOME/.bin/
 echo ''
 
 # pause for 2 seconds
@@ -30,21 +49,24 @@ sleep 2
 ############################
 
 # if ~/.bash_profile exists then it backit up
-test -d "/Users/$UNNAME/.bash_profile" && sudo mv /Users/$UNNAME/.bash_profile /Users/$UNNAME/.bash_profile_old && echo 'Backed up your old ~/.bash_profile to ~/.bash_profile_old' || echo 'No need to move old ~/.bash_profile as it does not exist'
+test -f "$HOME/.bash_profile" && sudo mv $HOME/.bash_profile $HOME/.bash_profile_old && echo 'Backed up your old ~/.bash_profile to ~/.bash_profile_old' || echo 'No need to move old ~/.bash_profile as it does not exist'
 
-# Copy the bash_profile-template to /Users/$UNNAME/.bash_profile
-sudo cp scripts/bash_profile-template /Users/$UNNAME/.bash_profile
+# Copy the bash_profile-template to $HOME/.bash_profile
+cp scripts/bash_profile-template $HOME/.bash_profile
 
 # Pause for 2 seconds
 sleep 2
 
+echo "So $(whoami), time to fix permissions"
+echo ''
+sleep 1
 # Set correct permissions
 echo ''
-echo 'Setttng permissions so that $UNNAME is owner and can read, write and execute'
-sudo chown -R $UNNAME /Users/$UNNAME/.bin
-sudo chmod -R 750 /Users/$UNNAME/.bin
-sudo chown $UNNAME /Users/$UNNAME/.bash_profile
-sudo chmod 750 /Users/$UNNAME/.bash_profile
+echo 'Setttng permissions so that' "$(whoami)" 'is owner and can read, write and execute'
+sudo chown -R "$(whoami)":staff $HOME/.bin
+sudo chmod -R 750 $HOME/.bin
+sudo chown "$(whoami)":staff  $HOME/.bash_profile
+sudo chmod 750 $HOME/.bash_profile
 echo ''
 sleep 2
 echo '***********************************************************************************'
