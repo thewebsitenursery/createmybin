@@ -1,0 +1,8 @@
+#!/bin/bash
+#this turns on the ssh server from the command line, enabling remote log in
+
+sudo -v
+sudo launchctl load -w /System/Library/LaunchDaemons/ssh.plist
+echo ""
+echo "ssh on"
+echo "Remote Login Enabled"

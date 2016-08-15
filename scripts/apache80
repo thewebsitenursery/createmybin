@@ -1,0 +1,12 @@
+#!/bin/bash
+say "Resetting apache port to default port 80"
+sudo apachectl stop
+sleep 2
+sudo rm /etc/apache2/httpd.conf
+sudo cp /etc/apache2/original/httpd.conf /etc/apache2/httpd.conf
+sleep 2
+sudo apachectl start
+say "Apache Port reset"
+open -a safari http://localhost:80
+
+

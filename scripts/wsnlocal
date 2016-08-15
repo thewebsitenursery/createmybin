@@ -1,0 +1,3 @@
+#!/bin/bash
+
+lt -p 80 -s thewsn stdout > /dev/null &

@@ -1,0 +1,11 @@
+#!/bin/bash
+say "Moving Apache Server Port to port five five seven eight zero"
+sudo apachectl stop
+sleep 2
+sudo rm /etc/apache2/httpd.conf
+sudo cp /etc/apache2/original/httpd.conf55780 /etc/apache2/httpd.conf
+sleep 2
+sudo apachectl start
+sleep 2
+say "Apache Port now listening at port five five seven eight zero"
+open -a safari http://localhost:55780

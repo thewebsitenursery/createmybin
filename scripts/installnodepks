@@ -1,0 +1,47 @@
+#!/bin/bash
+
+############################################################################
+# This script installs some basic node packes for development environments #
+# Add extra packages to the list below and run the script when you set up  #
+# a new development environment or machine                                 #
+############################################################################
+
+echo ""
+echo "This script installs some basic node packes for development environments."
+echo ""
+echo "Add extra packages to the list below and run the script when you set up a new development environment or machine."                                 #"
+echo ""
+# Ask for the administrator password upfront
+
+
+npm install npm@latest -g;
+npm install -g npm-check;
+
+
+npm install -g n;
+npm install -g azure-cli;
+npm install -g grunt-cli;
+npm install -g express;
+npm install -g gulp;
+npm install -g bower;
+npm install -g pug;
+npm install -g browserify;
+npm install -g ngrok;
+npm install -g yo;
+npm install -g generator-webapp;
+npm install -g webpage-scraper;
+npm install -g mikser;
+npm install -g webtorrent-cli;
+npm install -g droppy;
+npm install -g forever;
+npm install -g less;
+npm install -g httpserver;
+
+# check updates and dependensies for all packages
+echo ""
+echo "checking updates and dependensies for all packages"
+npm-check -u -g;
+echo ""
+echo "you have the following node modules installed globally"
+echo ""
+npm list -g

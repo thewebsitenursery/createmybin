@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# Reset and clear the icon cache
+# The computer will reboot but will ask your permission before proceeding
+
+clear #Clear the terminal screen
+echo ""
+echo "This Will Reset and Clear the Icon cache"
+echo "This is useful if your icons are corrupted and not showing as expected"
+echo ""
+echo "YOUR COMPUTER WILL REBOOT AFTER RUNNING THIS SCRIPT"
+echo ""
+echo "MAKE SURE YOU HAVE SAVED ANY WORK AND ARE READY TO REBOOT!"
+
+# Get sudo permissions
+
+sudo -v
+
+# Ask if you are ready to proceed
+
+read -p "Are you sure you want to continue? Please Type Y/N: " -n 1 -r
+echo    # (optional) move to a new line
+if [[ ! $REPLY =~ ^[Yy]$ ]]
+then
+    exit 1
+fi
+
+echo ""
+echo "Ok Here we Go"
+
+# Pause for 5 seconds before proceeding
+
+sleep 5
+
+sudo find /private/var/folders/ \
+-name com.apple.dock.iconcache -exec rm {} \;
+sudo find /private/var/folders/ \
+-name com.apple.iconservices -exec rm -rf {} \;
+sudo rm -rf /Library/Caches/com.apple.iconservices.store;
+
+echo ""
+echo "All Done"
+echo "Rebooting in five seconds"
+sleep 5
+sudo shutdown -r now

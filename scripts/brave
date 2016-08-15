@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# open a website in Brave from the command-line
+# eg. type 'Brave github.com' in terminal to make Brave open at https://github.com
+
+open -a "Brave" "https://$*"

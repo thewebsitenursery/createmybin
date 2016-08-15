@@ -1,0 +1,4 @@
+#!/bin/bash
+sudo apachectl start
+open -a Safari.app http://localhost:55780
+say "Apache server on"

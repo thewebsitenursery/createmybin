@@ -1,0 +1,34 @@
+#!/bin/bash
+# Set IPV6 to auto on OSX
+clear
+echo "turninG IPV6 to automatic on all devices"
+sudo networksetup -setv6automatic Wi-Fi
+sudo networksetup -setv6automatic "Bluetooth PAN"
+sudo networksetup -setv6automatic "Thunderbolt Bridge"
+sudo networksetup -setv6automatic "Thunderbolt Ethernet"
+sleep 2
+echo "Current Devices:"
+sudo networksetup -listallnetworkservices
+echo ""
+echo ""
+echo "Wi-Fi Device Info:"
+sudo networksetup -getinfo Wi-Fi
+echo ""
+echo "Bluetooth PAN Device Info:"
+sudo networksetup -getinfo "Bluetooth PAN"
+echo ""
+echo "Thunderbolt Bridge Device Info:"
+sudo networksetup -getinfo "Thunderbolt Bridge"
+echo ""
+echo "Thunderbolt Ethernet Device Info:"
+sudo networksetup -getinfo "Thunderbolt Ethernet"
+echo ""
+echo "type setipv6off to turn ipv6 to off on all devices"
+echo ""
+echo ""
+echo "These devices are up:"
+sudo ifconfig -lu
+echo ""
+echo ""
+echo "Full ifconfig info:"
+sudo ifconfig -a

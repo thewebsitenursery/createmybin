@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# open a website in safari from the command-line
+# eg. type 'safari github.com' in terminal to make Safari open at https://github.com
+
+open -a "Safari" "https://$*"

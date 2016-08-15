@@ -1,0 +1,12 @@
+#!/bin/bash
+# Empties all trash in all accounts on all drives
+
+clear
+echo "Emptying all trash in 10 seconds. Press ctrl+c to cancel."
+say "Emptying all trash in 10 seconds. Press control and C to cancel."
+sleep 10
+sudo rm -rf /Users/*/.Trash/*
+sudo rm -rf /Volumes/*/.Trashes/*
+clear
+echo "all trash empty"
+say "all trash empty"

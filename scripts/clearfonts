@@ -1,0 +1,15 @@
+#!/bin/bash
+# Cleans the font registry for the user and the system
+
+clear
+echo "Clearing Font Cache in 5 Seconds"
+say "Clearing Font Cache in 5 Seconds"
+
+sleep 5
+
+sudo atsutil databases -removeUser && \
+atsutil server -shutdown && \
+atsutil server -ping
+
+say "Font cache cleared"
+echo "Font cache cleared"

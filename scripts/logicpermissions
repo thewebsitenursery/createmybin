@@ -1,0 +1,14 @@
+#!/bin/bash
+
+## Set Correct Permissions for /Library/Applications Support Logic
+clear
+echo ' '
+echo 'Setting Correct Permissions for files in /Library/Applications Support/Logic'
+echo 'Owner should be root'
+echo 'Group should be admin'
+echo ' '
+sudo chown -R root:admin /Library/Application\ Support/Logic
+sudo chmod -R 755 /Library/Application\ Support/Logic
+echo 'All should look good'
+echo ' '
+sudo ls -las /Library/Application\ Support/Logic

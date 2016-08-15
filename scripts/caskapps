@@ -1,0 +1,111 @@
+#!/bin/bash
+# Install apps using Homebrew Cask.
+
+# Ask for the administrator password upfront.
+sudo -v
+
+# Keep-alive: update existing `sudo` time stamp until the script has finished.
+while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
+
+# Set correct permissions
+
+echo "What is your username?"
+read input_variable
+echo "Thank-you: $input_variable"
+sudo chown -R "$input_variable" /Users/"$input_variable"
+sudo chmod -R 700 /Users/"$input_variable"
+sudo chown -R "$input_variable" /usr/local
+sudo chmod -R 700 /usr/local
+sudo chown -R "$input_variable" /opt
+sudo chmod -R 700 /opt
+
+
+# Check for Homebrew,
+# Install if we don't have it
+if test ! $(which brew); then
+  echo "Installing homebrew..."
+  ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+fi
+
+# Make sure we’re using the latest Homebrew.
+brew update
+
+# Upgrade any already-installed formulae.
+brew upgrade --all
+
+# Remove outdated versions from the cellar.
+brew cleanup
+brew prune
+
+# Check for Homebrew Cask
+# Install if we dont have it
+if test ! "brew cask"; then
+echo "Installing Homebrew Cask..."
+brew tap caskroom/cask
+fi
+
+# Remove outdated versions from the cask cellar.
+brew cask cleanup
+brew cask cleanup
+
+
+echo ""
+echo "Homebrew & Homebrew Cask Installed & Updated"
+echo ""
+
+# Install these apps if not already installed
+# Add a comment to prevent app install
+
+brew cask install virtualbox-extension-pack
+brew cask install vmware-fusion
+brew cask install vmware-horizon-client
+brew cask install ableton-live
+brew cask install adobe-creative-cloud
+brew cask install aerial
+# brew cask install microsoft-office
+brew cask install appdelete
+brew cask install bbc-iplayer-downloads
+brew cask install cakebrew
+brew cask install daisydisk
+brew cask install dockertoolbox
+brew cask install github-desktop
+brew cask install google-web-designer
+brew cask install brackets
+brew cask install atom
+brew cask install pinegrow-web-designer
+brew cask install vlc
+brew cask install plex-media-server
+brew cask install idisplay
+brew cask install transmission
+brew cask install ssh-tunnel-manager
+brew cask install sshfs
+brew cask install flux
+brew cask install anvil
+brew cask install authy-bluetooth
+brew cask install audacity
+brew cask install autodmg
+brew cask install carbon-copy-cloner
+brew cask install cyberduck
+brew cask install media-converter
+brew cask install etrecheck
+brew cask install google-chrome
+brew cask install rescuetime
+brew cask install skype
+brew cask install mamp
+brew cask install onxy
+brew cask install mountain-duck
+brew cask install media-converter
+brew cask install malwarebytes-anti-malware
+brew cask install virtualbox
+brew cask install vagrant
+brew cask install google-chrome
+brew cask install openemu
+brew cask install node
+
+
+# Hide the Opt Directory
+sudo chflags hidden /opt
+# All Done
+echo ""
+echo "Done"
+done

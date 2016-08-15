@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# open a website in Chrome from the command-line
+# eg. type 'chrome github.com' in terminal to make Chrome open at https://github.com
+
+open -a "Google Chrome" "https://$*"

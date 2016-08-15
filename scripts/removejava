@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# The code below will remove all cases of Java from OSX
+clear # clear the terminal screen
+echo ""
+echo "The code below will remove all cases of Java from OSX"
+echo ""
+
+# Get sudo permissions
+
+sudo -v
+
+# Ask if you are ready to proceed
+
+read -p "Are you sure you want to continue? Please Type Y/N: " -n 1 -r
+echo    # (optional) move to a new line
+if [[ ! $REPLY =~ ^[Yy]$ ]]
+then
+    exit 1
+fi
+
+echo ""
+echo "Ok Here we Go"
+
+# Pause for 2 seconds before proceeding
+
+sleep 2
+
+sudo rm -rf /Library/PreferencePanes/JavaControlPanel.prefPane
+sudo rm -rf /Library/Internet\ Plug-Ins/JavaAppletPlugin.plugin
+sudo rm -rf /Library/LaunchAgents/com.oracle.java.Java-Updater.plist
+sudo rm -rf /Library/LaunchDaemons/com.oracle.java.Helper-Tool.plist
+sudo rm -rf /Library/Preferences/com.oracle.java.Helper-Tool.plist
+# sudo rm -rf /System/Library/Frameworks/JavaVM.framework
+sudo rm -rf /var/db/receipts/com.oracle.jdk8u65.bom
+sudo rm -rf /var/db/receipts/com.oracle.jdk8u65.plist
+sudo rm -rf /var/db/receipts/com.oracle.jre.bom
+sudo rm -rf /var/db/receipts/com.oracle.jre.plist
+sudo rm -rf /var/root/Library/Preferences/com.oracle.javadeployment.plist
+sudo rm -rf ~/Library/Preferences/com.oracle.java.JavaAppletPlugin.plist
+sudo rm -rf ~/Library/Preferences/com.oracle.javadeployment.plist
+sudo rm -rf ~/.oracle_jre_usage
+
+echo ""
+echo "All Done"

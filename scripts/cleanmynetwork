@@ -1,0 +1,16 @@
+#!/bin/bash
+
+## Cleans your Internet / Network setting by typing "cleanmynetwork" at the command line.
+
+echo ""
+echo "Cleaning your Internet Settings in 5 seconds"
+echo ""
+sleep 5
+sudo ifconfig en0 down && sudo ifconfig en0 up;
+sudo arp -nla && sudo arp -da;
+sudo dscacheutil -flushcache && sudo killall -HUP mDNSResponder;
+echo ""
+echo "Network Settings Routing Tables & DNS flushed and clean"
+echo ""
+echo "Your network settings are as follows"
+sudo ifconfig -a

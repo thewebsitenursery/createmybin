@@ -1,0 +1,9 @@
+#!/bin/bash
+
+## Information about  the  HTTP tunnel to thewsn.localtunnel.me
+clear
+echo "Information about  the  HTTP tunnel to thewsn.localtunnel.me"
+echo ""
+echo "lsof -i | grep node 
+
+

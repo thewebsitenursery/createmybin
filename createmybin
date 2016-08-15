@@ -1,0 +1,63 @@
+#!/bin/bash
+
+# Creates a new ~/.bin full of useful scripts for OSX
+# Also updates ~/.bash_profile with useful aliases and corrects $PATH.
+# Also checks and corrects user permissions for ~/.bin and ~/.bash_profile
+
+#get sudo upfront
+sudo -v
+echo ''
+
+# backup ~/.bin if it already exists
+
+test -d "/Users/$USER/.bin" && mv "/Users/$USER/.bin" "/Users/$USER/.bin_old" && echo 'Backed up your old ~/.bin to ~/.bin_old' || echo 'No need to move old ~/.bin as it does not exist'
+
+# pause for 2 seconds
+sleep 2
+
+# create new ~/.bin
+
+mkdir "/Users/$USER/.bin"
+echo ''
+echo 'Copying the scripts to ~/.bin'
+cp -a scripts/* /Users/$USER/.bin/
+echo ''
+
+# pause for 2 seconds
+sleep 2
+
+###########################
+## UPDATE BASH PROFILE
+############################
+
+# if ~/.bash_profile exists then it backit up
+test -d "/Users/$USER/.bash_profile" && mv "/Users/$USER/.bash_profile" "/Users/$USER/.bash_profile_old" && echo 'Backed up your old ~/.bash_profile to ~/.bash_profile_old' || echo 'No need to move old ~/.bash_profile as it does not exist'
+
+# Copy the bash_profile-template to /Users/$USER/.bash_profile
+cp scripts/bash_profile-template /Users/$USER/.bash_profile
+
+# Pause for 2 seconds
+sleep 2
+
+# Set correct permissions
+echo ''
+echo 'Setttng permissions so that $USER is owner and can read, write and execute'
+sudo chown -R $USER "/Users/$USER/.bin"
+sudo chmod -R 750 "/Users/$USER/.bin"
+sudo chown $USER "/Users/$USER/.bash_profile"
+sudo chmod 750 "/Users/$USER/.bash_profile"
+echo ''
+sleep 2
+echo '***********************************************************************************'
+echo ''
+echo 'Your ~/.bash_profile has been updated'
+echo 'Type printprofile to read your bash_profile'
+echo 'Type listbin to list the scripts in ~/.bin'
+echo ''
+echo '***********************************************************************************'
+# pause for 2 second
+echo ''
+read -s -n 1 -p "Press any key to continue"
+echo ''
+echo 'Thanks, Bye.'
+echo ''

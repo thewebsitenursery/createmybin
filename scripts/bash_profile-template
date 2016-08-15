@@ -1,0 +1,141 @@
+## My Bash Profile
+
+export TERM="xterm-color" 
+export PS1='\[\e[0;33m\]\u\[\e[0m\]@\[\e[0;32m\]\h\[\e[0m\]:\[\e[0;34m\]\w\[\e[0m\]\n\$ '
+alias ls="ls -las -h"
+
+
+## My Paths
+export PATH="/Users/alistair/.bin:$PATH"
+export PATH="/usr/local/bin:$PATH"
+export PATH="/usr/local/sbin:$PATH"
+
+# Easier navigation: .., ..., ...., ....., ~ and -
+alias ...="cd ../.."
+alias ....="cd ../../.."
+alias .....="cd ../../../.."
+alias ~="cd ~" # `cd` is probably faster to type though
+
+# Get OS X Software Updates, and update installed Ruby gems, Homebrew, npm, and their installed packages
+alias update='sudo softwareupdate -i -a; brew update; brew upgrade --all; brew cleanup; sudo npm install npm -g; sudo npm update -g'
+
+# IP addresses
+alias ip="dig +short myip.opendns.com @resolver1.opendns.com"
+alias localip="ipconfig getifaddr en0"
+alias ips="sudo ifconfig -a | grep -o 'inet6\? \(addr:\)\?\s\?\(\(\([0-9]\+\.\)\{3\}[0-9]\+\)\|[a-fA-F0-9:]\+\)' | awk '{ sub(/inet6? (addr:)? ?/, \"\"); print }'"
+
+# Flush Directory Service cache
+alias flush="sudo dscacheutil -flushcache && sudo killall -HUP mDNSResponder"
+
+# Clean up LaunchServices to remove duplicates in the “Open With” menu
+alias lscleanup="sudo /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -kill -r -domain local -domain system -domain user && killall Finder"
+
+# Recursively delete `.DS_Store` files
+alias cleanup="sudo find . -type f -name '*.DS_Store' -ls -delete"
+
+# Empty the Trash on all mounted volumes and the main HDD
+# Also, clear Apple’s System Logs to improve shell startup speed
+alias emptytrash="sudo rm -rfv /Volumes/*/.Trashes; sudo rm -rfv ~/.Trash; sudo rm -rfv /private/var/log/asl/*.asl"
+
+# Show/hide hidden files in Finder
+alias show="defaults write com.apple.finder AppleShowAllFiles -bool true && killall Finder"
+alias hide="defaults write com.apple.finder AppleShowAllFiles -bool false && killall Finder"
+
+# Hide/show all desktop icons (useful when presenting)
+alias hidedesktop="defaults write com.apple.finder CreateDesktop -bool false && killall Finder"
+alias showdesktop="defaults write com.apple.finder CreateDesktop -bool true && killall Finder"
+
+# Reload the shell (i.e. invoke as a login shell)
+alias reload="exec $SHELL -l"
+
+# list the files in my ~/.bin
+alias listbin="ls -las ~/.bin"
+
+# print the contents of my ~/.bash_profile
+alias printprofile="cat ~/.bash_profile"
+
+# Reset Launchpad
+alias resetlp="defaults write com.apple.dock ResetLaunchPad -bool true; killall Dock"
+
+# Turn off/on Notifacation Center
+alias ncoff="launchctl unload -w /System/Library/LaunchAgents/com.apple.notificationcenterui.plist"
+alias ncon="launchctl load -w /System/Library/LaunchAgents/com.apple.notificationcenterui.plist"
+
+# Turn off Kerberos on Port 88
+alias kerboff="sudo launchctl unload -w /System/Library/LaunchDaemons/com.apple.Kerberos.kdc.plist"
+alias kerbon="sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.Kerberos.kdc.plist"
+
+# Eject all external drives
+alias ejectall="osascript ~/.bin/ejectall.scpt"
+
+# Activate RDP
+alias rdpon="sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -restart -agent"
+
+# Deactivate RDP
+alias nordp="sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -deactivate -configure -access -off"
+
+# Activate Remote Desktop Sharing, disable access privileges for all users:
+alias rdpoff="sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -activate -configure -access -off"
+
+# Activate Remote Desktop Sharing, enable access privileges for the users "admin", grant full privileges for the users "admin", restart ARD Agent and Menu extra:
+alias rdpalistair="sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -activate -configure -access -on -users alistair -privs -all -restart -agent -menu"
+
+# Docker Aliases
+
+alias dps="docker ps"
+alias dpsl="docker ps -l"
+alias dpsa="docker ps -a"
+alias drmi="docker rmi"
+alias di="docker images"
+alias drm="docker rm"
+
+# SSH TO AMAZON awsawslinux.tk
+alias ssh-amsawslinus='cd ~/.ssh && ssh -i "amsawslinux.pem" ubuntu@amsawslinux.tk'
+
+# SSH TO AMAZON awsaws.tk
+alias ssh-amsaws='ssh alistair@amsaws.tk'
+
+# Mount AMAZON amsaws.tk
+# Must have MacFuse install for this to work
+alias mount-amsaws='mkdir ~/amsaws && sshfs alistair@amsaws.tk:/home/alistair/ /Users/alistair/amsaws/'
+
+# Unmount AMAZON amsaws.tk from desktop
+alias umount-amsaws='diskutil umount ~/amsaws && rm -rf ~/amsaws'
+
+
+# AMS AZURE ALIAS
+# alias amsazure="ssh alistair@13.92.122.236"
+
+# WSNLINUX.tk on azuer ssh alias
+alias ssh-wsnlinx="ssh alistair@wsnlinux.tk"
+
+
+# Docker Digital Ocean Alias
+# alias ssh-ddo="ssh alistair@thewebsitenursery.host"
+
+# Mount or Unmount Webfaction Hosting to ~/Sites/Webfaction
+# Mount webfaction hosting to ~/Webfaction
+# MacFuse must be installed for this work
+alias mount-wf='mkdir ~/Webfaction && sudo sshfs -o allow_other,defer_permissions "alinichols@dev.thewebsitenursery.com:/home/alinichols/" ~/Webfaction'
+
+# Unmount webfaction hosting 
+alias umount-wf='diskutil umount /Users/alistair/Desktop/Webfaction && rm -rf ~/Webfaction'
+
+# SSH Webfaction Alias
+alias ssh-wf='ssh alinichols@dev.thewebsitenursery.com'
+
+
+# nvm shizzle
+
+export NVM_DIR="$HOME/.nvm"
+  . "$(brew --prefix nvm)/nvm.sh"
+
+
+# Bash Completion shizzle
+
+if [ -f $(brew --prefix)/etc/bash_completion ]; then
+. $(brew --prefix)/etc/bash_completion
+fi
+
+test -e "${HOME}/.iterm2_shell_integration.bash" && source "${HOME}/.iterm2_shell_integration.bash"
+

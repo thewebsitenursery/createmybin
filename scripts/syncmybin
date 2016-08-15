@@ -1,0 +1,15 @@
+#!/bin/bash
+
+## Sync the bin to the templated version
+echo ''
+echo 'Syncing your bin'
+rm ~/.bin/bash_profile-template
+cp ~/.bash_profile ~/.bin/bash_profile-template
+rm -rf ~/Developer/GitHub\ Repositories/createmybin/scripts/*
+rsync -avz ~/.bin/ /Users/alistair/Developer/GitHub\ Repositories/createmybin/scripts
+sleep 1
+echo ''
+echo 'done: create my bin now mirrors ~/.bin'
+echo ''
+ls /Users/alistair/Developer/GitHub\ Repositories/createmybin/scripts
+

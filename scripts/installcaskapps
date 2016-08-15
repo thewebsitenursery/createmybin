@@ -1,0 +1,14 @@
+#!/bin/bash
+
+## Intsall some apps that I regulary use from Brew Cask
+sudo -v 
+
+brew cask install all2mp3;
+brew cask install cakebrew;
+brew cask install coda2;
+brew cask install adobe-creative-cloud;
+brew cask install etrecheck;
+brew cask install malwarebytes-anti-malware;
+brew cask install mountain-duck;
+brew cask install openemu;
+brew cask install pinegrow-web-designer;

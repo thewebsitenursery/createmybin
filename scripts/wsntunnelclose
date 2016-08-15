@@ -1,0 +1,8 @@
+#!/bin/bash
+
+## Closes the  HTTP tunnel to thewsn.localtunnel.me
+
+echo "Closes the  tunnel to your local websever"
+echo 'killall node' 
+killall node
+

@@ -1,0 +1,95 @@
+#!/bin/bash
+
+# A nice bash / shell script boiler plate from thewebsitenursery.com
+# Clone it, fork it, pull it, make it your own at github.com/thewebsitenursery/boilerplatebash
+
+# Use this bash boiler plate to develop scripts that need input from the user
+
+clear # start with a nice clean terminal window
+echo ""
+
+# Set continue to false by default
+CONTINUE=false
+
+echo ""
+echo "###############################################" 
+echo "#       IMPORTANT INFORMATION GOES HERE!      #" 
+echo "#    BE SURE TO BE CLEAR ABOUT THE OUTCOME    #" 
+echo "#                                             #" 
+echo "#        ASK THE USER TO CONFIRM BEFORE       #" 
+echo "#     BLINDLY CONTINUING & CREATING A MESS    #" 
+echo "###############################################" 
+echo ""
+echo ""
+echo "Have you read through the script you're about to run & " 
+echo "understood what it does and what it could do (y/n)" # yes / no question
+echo ""
+
+read -r response	# reads the yes or no answer
+if [[ $response =~ ^([yY][eE][sS]|[yY])$ ]]; then	# If Yes then continue to main script 
+  CONTINUE=true
+fi
+
+if ! $CONTINUE; then	# Check if we're continuing and output a message if not
+  echo "Please go read the script, it only takes a few minutes" 
+  echo ""
+  sleep 2
+  exit 
+fi
+
+
+#################################################################################
+#        UNCOMMENT THE NEXT TWO LINES IF SUDO IS NEEDED IN THE SCRIPT           #
+#################################################################################
+
+# sudo -v 
+# while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null & 
+
+
+###################################################################################
+# CODE INFORMATION BLOCK COPY / PASTE / REPEAT & AMMEND  CODE IN BLOCK AS NEEEDED #
+###################################################################################
+
+echo ""
+echo "WOULD YOU LIKE TO ME TO KNOW YOUR NAME (y/n)"  # YES OR NO QUESTION GOES HERE
+read -r response
+if [[ $response =~ ^([yY][eE][sS]|[yY])$ ]]; then
+  echo "COOL, WHAT'S YOUR NAME?" # CONFIRMATION STATEMENT GOES HERE FOR POSITVE ANSWER
+  read input_variable1
+  echo ""
+  echo "Hello $input_variable1 nice to meet you!"  # change the bash command for $input_variable1 to whatever you need
+fi # if no to the YES / NO question the script moves on to the next question
+
+	# if there is no next question then the next command will close and end the script.
+
+###################################################################################
+# CODE INFORMATION BLOCK COPY / PASTE / REPEAT & AMMEND  CODE IN BLOCK AS NEEEDED #
+###################################################################################
+
+echo ""
+echo "WOULD YOU LIKE TO ME TO KNOW YOUR AGE (y/n)"  # YES OR NO QUESTION GOES HERE
+read -r response
+if [[ $response =~ ^([yY][eE][sS]|[yY])$ ]]; then
+  echo "COOL, WHAT YEAR WERE YOU BORN?" # CONFIRMATION STATEMENT GOES HERE FOR POSITVE ANSWER
+  read input_variable2
+  mydate=$(date +'%Y') # Records the variable mydate i.e. 2016
+  (( age = $mydate - $input_variable2 ))
+  echo ""
+  echo "WOW! $input_variable1 you look great for $age !!"  # change the bash command for $input_variable2 to whatever you need
+echo ""
+fi # if they said no to the YES / NO question the script moves on to the next question
+
+ 	# if there is no next question then the next command will close and end the script.
+ 		
+###################################################################################
+#             The next commands say goodbye & exit the script                      #
+###################################################################################
+
+echo ""
+echo "Thanks for chatting, was nice getting to know you."
+echo ""
+echo "Laters!"
+sleep 2 			# Pause for 2 seconds before exiting
+
+exit  # Exit command sends any dialogue to a the blackhole of /dev/null
+

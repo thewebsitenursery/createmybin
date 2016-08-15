@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# updates the createmybin github repository with changes you make to your ~/.bash_profile or scripts in ~/.bin
+
+echo ''
+echo 'Updating the createmybin repository remember to push it to github.com soon'
+echo ''
+rm /Users/$USER/.bin/bash_profile-template
+cp /Users/$USER/.bash_profile /Users/$USER/.bin/bash_profile-template
+rsync -avz /Users/$USER/.bin/ /Users/$USER/Developer/GitHub\ Repositories/createmybin/scripts
+
+echo ''
+
+echo 'sorted dude'
+
+echo ''
+sleep 2
+echo 'your ~/.bash_profile and  ~/.bin have been synced'
+echo ''
+echo 'dont forget to push the changes to github'
+sleep 1
+exit 2 >> /dev/null

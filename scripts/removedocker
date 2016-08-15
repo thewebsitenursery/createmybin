@@ -1,0 +1,27 @@
+#!/bin/bash
+# REMOVE ALLD DOCKER CONTAINERS AND IMAGES
+clear
+echo ""
+echo "THIS WILL REMOVE ALL CONTAINERS AND IMAGES"
+echo ""
+echo "You have 5 Seconds to Cancel with Ctrl+C"
+echo ""
+sleep 7
+echo "OK HERE GOES!"
+sleep 3
+echo ""
+# FIRST REMOVE ALL CONTAINERS
+echo "FIRST REMOVE ALL CONTAINERS"
+sudo -v
+
+sudo docker rm $(docker ps -qf status=exited)
+
+echo "containers deleted"
+echo ""
+docker ps -a
+# SECOONDLY REMOVING ALL IMAGES
+echo "NOW REMOVE ALL IMAGES"
+echo ""
+docker images
+echo ""
+echo "This house is CLEAN!"

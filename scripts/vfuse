@@ -1,0 +1,610 @@
+#!/usr/bin/python
+'''
+This script takes a never-booted DMG and converts it to a VMware Fusion VM.
+
+Requirements:
+    VMware Fusion 7.x Professional
+    OS X 10.9.5+ (compatible with 10.10)
+    A never-booted image (i.e. created with AutoDMG)
+'''
+##############################################################################
+# Copyright 2015 Joseph Chilcote
+# 
+#  Licensed under the Apache License, Version 2.0 (the "License"); you may not
+#  use this file except in compliance with the License. You may obtain a copy
+#  of the License at
+# 
+#       http://www.apache.org/licenses/LICENSE-2.0
+# 
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#  License for the specific language governing permissions and limitations
+#  under the License.
+##############################################################################
+
+__author__  = 'Joseph Chilcote (chilcote@gmail.com)'
+__version__ = '0.9.1'
+
+import os
+import sys
+import subprocess
+import plistlib
+import urllib2
+import tempfile
+import shutil
+import time
+import json
+import argparse
+import glob
+from random import randint
+from collections import OrderedDict
+from SystemConfiguration import SCDynamicStoreCopyConsoleUser
+try:
+    from vserv import VMXMonitor
+except ImportError as err:
+    pass
+
+class Error(Exception):
+    """Class for domain specific exceptions."""
+
+class VdiskManagerError(Error):
+    """Gathers error from vmware-vdiskmanager."""
+
+def colored(text, color=None):
+    if not os.getenv('ANSI_COLORS_DISABLED'):
+        fmt_str = '\033[%dm'
+        reset = '\033[0m'
+        colors = {
+            'grey': 30,
+            'gray': 30,
+            'red': 31,
+            'green': 32,
+            'yellow': 33,
+            'blue': 34,
+            'magenta': 35,
+            'cyan': 36,
+            'white': 37,
+        }
+        if color is not None:
+            text = fmt_str % (colors[color]) + text + reset
+    return text
+
+def import_template(template):
+    '''Imports user-defined template'''
+    try:
+        with open(template) as f:
+            d = json.load(f)
+    except NameError as err:
+        print colored('%s; bailing script.' % err, 'red')
+        sys.exit(1)
+    except IOError as err:
+        print colored('%s: %s' % (err.strerror, template), 'red')
+        sys.exit(1)
+    return d
+
+def get_source_dmg(url, dmg, cache_dir, source_dmg=None, downloaded=False, cached=False):
+    '''Downloads Base OS DMG if URL defined by user
+        Checks cache for existing Base OS image'''
+    if os.path.exists(os.path.join(cache_dir, dmg)):
+        print colored('%s exists in cache' % dmg, 'green')
+        cached = True
+        source_dmg = os.path.join(cache_dir, dmg)
+    else:
+        print colored('Downloading %s' % url, 'green')
+        downloaded = True
+        try:
+            req = urllib2.urlopen(url)
+            source_dmg = os.path.join(tempfile.mkdtemp(), dmg)
+            with open(source_dmg, 'wb') as f:
+                shutil.copyfileobj(req, f)
+        except urllib2.URLError, e:
+            print colored('Download of %s failed with error %s' % (url, e))
+            sys.exit(1)
+        except IOError, e:
+            print colored('Could not write %s to disk' % source_dmg)
+            sys.exit(1)
+    return source_dmg, downloaded, cached
+
+def mount_dmg(dmg, disk_id = False):
+    '''Mounts base DMG'''
+    d = {}
+    if not dmg:
+        print colored('No source DMG provided', 'red')
+        sys.exit(1)
+    print colored('Mounting %s' % dmg, 'green')
+    try:
+        output = subprocess.check_output(['/usr/bin/hdiutil', 'attach',
+                                    '-nobrowse', '-noverify', '-noautoopen',
+                                    dmg, '-plist'])
+        d = plistlib.readPlistFromString(output)
+        for i in d['system-entities']:
+            if 'mount-point' in str(i):
+                mount_point = i['mount-point']
+                mountpoint_dev_entry = i['dev-entry']
+            if 'GUID_partition_scheme' in str(i):
+                disk_id = i['dev-entry']
+        if not disk_id:
+            print colored('Warning: your DMG does not have a partition '\
+                            'scheme, and vfuse may fail', 'yellow')
+            disk_id = mountpoint_dev_entry
+        return mount_point, disk_id
+    except subprocess.CalledProcessError as err:
+        print colored('Cannot mount dmg: %s' % dmg, 'red')
+        sys.exit(1)
+
+def get_osvers(mount_point):
+    '''Returns the OS Version of the mounted system DMG'''
+    f = os.path.join(mount_point,
+                        'System/Library/CoreServices/SystemVersion.plist')
+    try:
+        d = plistlib.readPlist(f)
+        print colored('OS X version is %s' % d['ProductVersion'], 'green')
+        return d['ProductVersion']
+    except IOError as err:
+        print colored(str(err), 'red')
+        unmount_dmg(mount_point)
+        sys.exit(1)
+
+def unmount_dmg(disk_id):
+    '''Unmounts Base OS DMG'''
+    print colored('Unmounting Base OS DMG', 'green')
+    task = subprocess.Popen(['/usr/bin/hdiutil', 'detach', '-force', disk_id],
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out, err = task.communicate()
+    if err:
+        print colored('Could not detach:\t%s' % disk_id, 'red')
+
+def create_vmdk(output_dir, output_name, disk_id, disk_type, fusion_path):
+    '''Converts Base OS DMG to VMDK'''
+    vmpath = os.path.join(output_dir, output_name + '.vmwarevm')
+    link = os.path.join(vmpath, os.path.basename(disk_id) + '-link')
+    vmdk = os.path.join(vmpath, output_name + '.vmdk')
+    if os.path.exists(vmpath):
+        print colored('VMware Fusion VM already exists: %s' % vmpath, 'red')
+        sys.exit(1)
+    os.mkdir(vmpath)
+
+    if not fusion_path:
+        cmd = ['/usr/bin/mdfind', 'kMDItemCFBundleIdentifier == com.vmware.fusion']
+        fusion_path = sorted(subprocess.check_output(cmd).strip().split('\n'))[0]
+
+        if not fusion_path:
+            try:
+                fusion_path = glob.glob('/Applications/VMware Fusion*.app')[0]
+            except IndexError:
+                print colored('Error: VMware Fusion.app not found', 'red')
+                unmount_dmg(disk_id)
+                sys.exit(1)
+
+    print colored('Using VMware Fusion path: %s' % fusion_path, 'green')
+    fusion_tools_path = os.path.join(fusion_path, 'Contents/Library')
+
+    print colored('Converting DMG to VMDK', 'green')
+    try:
+        # /Applications/VMware\ Fusion.app/Contents/Library/vmware-rawdiskCreator \
+        #                       create /dev/disk2 fullDevice ./disk2-link lsilogic
+        cmd = [os.path.join(fusion_tools_path, 'vmware-rawdiskCreator'),
+                                                                    'create',
+                                                                    disk_id,
+                                                                    'fullDevice',
+                                                                    link,
+                                                                    'lsilogic']
+        task = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        out, err = task.communicate()
+        if err:
+            print colored('Error: %s' % err.strip(), 'red')
+            print colored('There is a problem with your DMG, please re-create it '\
+                                    'and try again', 'red')
+            unmount_dmg(disk_id)
+            sys.exit(1)
+
+        # /Applications/VMware\ Fusion.app/Contents/Library/vmware-vdiskmanager -r \
+        #                       ./disk2-link.vmdk -t 0 ./osx-disk.vmdk
+        cmd = [os.path.join(fusion_tools_path, 'vmware-vdiskmanager'),
+                                                                    '-r',
+                                                                    link + '.vmdk',
+                                                                    '-t',
+                                                                    str(disk_type),
+                                                                    vmdk]
+        task = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        out, err = task.communicate()
+        if task.returncode:
+            if not err:
+                err = 'Undetermined error with vmware-vdiskmanager'
+            raise VdiskManagerError(err.strip())
+
+    except OSError as e:
+        err = 'Failed to execute %s: %s' % (cmd[0], e)
+        print colored('Error: %s' % err, 'red')
+        unmount_dmg(disk_id)
+        shutil.rmtree(vmpath)
+        sys.exit(1)
+
+    except VdiskManagerError, e:
+        print colored('Error: %s' % e, 'red')
+        unmount_dmg(disk_id)
+        shutil.rmtree(vmpath)
+        sys.exit(1)
+
+    os.remove(link + '.vmdk')
+    return vmpath
+
+def set_perms(path):
+    '''Sets the permissions of given path to local user'''
+    uid = SCDynamicStoreCopyConsoleUser(None, None, None)[1]
+    os.chown(path, int(uid), 20)
+    for root, dirs, files in os.walk(path):
+        for f in files:
+            os.chown(os.path.join(path, f), int(uid), 20)
+
+def create_vmx(
+                vmpath,
+                output_name,
+                guest_os,
+                hw_version,
+                mem_size,
+                connection_type,
+                enable3d,
+                vnc_port,
+                vnc_passwd,
+                mac_address,
+                hw_model,
+                serial_number,
+                serial_format,
+                shared_folder
+            ):
+    '''Generates a working VMX file'''
+    vmx = os.path.join(vmpath, output_name + '.vmx')
+    print colored('Populating VMX file', 'green')
+    with open(vmx, 'w') as f:
+        f.write('.encoding = "UTF-8"\n')
+        f.write('config.version = "8"\n')
+        f.write('virtualhw.version = "%d"\n' % hw_version)
+        f.write('numvcpus = "2"\n')
+        f.write('sata0.present = "TRUE"\n')
+        f.write('memsize = "%d"\n' % mem_size)
+        f.write('sata0:0.present = "TRUE"\n')
+        f.write('sata0:0.fileName = "%s.vmdk"\n' % output_name)
+        f.write('sata0:1.present = "TRUE"\n')
+        f.write('sata0:1.autodetect = "TRUE"\n')
+        f.write('sata0:1.deviceType = "cdrom-raw"\n')
+        f.write('sata0:1.startConnected = "FALSE"\n')
+        f.write('ethernet0.present = "TRUE"\n')
+        f.write('ethernet0.connectionType = "%s"\n' % connection_type)
+        f.write('ethernet0.virtualDev = "e1000e"\n')
+        f.write('ethernet0.wakeOnPcktRcv = "FALSE"\n')
+        f.write('ethernet0.linkStatePropagation.enable = "TRUE"\n')
+        f.write('usb.present = "TRUE"\n')
+        f.write('ehci.present = "TRUE"\n')
+        f.write('ehci.pciSlotNumber = "0"\n')
+        f.write('pciBridge0.present = "TRUE"\n')
+        f.write('pciBridge4.present = "TRUE"\n')
+        f.write('pciBridge4.virtualDev = "pcieRootPort"\n')
+        f.write('pciBridge4.functions = "8"\n')
+        f.write('pciBridge5.present = "TRUE"\n')
+        f.write('pciBridge5.virtualDev = "pcieRootPort"\n')
+        f.write('pciBridge5.functions = "8"\n')
+        f.write('pciBridge6.present = "TRUE"\n')
+        f.write('pciBridge6.virtualDev = "pcieRootPort"\n')
+        f.write('pciBridge6.functions = "8"\n')
+        f.write('pciBridge7.present = "TRUE"\n')
+        f.write('pciBridge7.virtualDev = "pcieRootPort"\n')
+        f.write('pciBridge7.functions = "8"\n')
+        f.write('vmci0.present = "TRUE"\n')
+        f.write('smc.present = "TRUE"\n')
+        f.write('hpet0.present = "TRUE"\n')
+        f.write('ich7m.present = "TRUE"\n')
+        f.write('firmware = "efi"\n')
+        f.write('displayname = "%s"\n' % output_name)
+        f.write('guestos = "%s"\n' % guest_os)
+        f.write('nvram = "%s.nvram"\n' % output_name)
+        f.write('keyboardAndMouseProfile = "macProfile"\n')
+        f.write('floppy0.present = "FALSE"\n')
+        f.write('msg.autoanswer = "TRUE"')
+        if enable3d:
+            f.write('\nmks.enable3d = "TRUE"')
+        else:
+            f.write('\nmks.enable3d = "FALSE"')
+        if vnc_passwd:
+            f.write('\nremotedisplay.vnc.enabled = "TRUE"\n')
+            f.write('remotedisplay.vnc.port = "%s"\n' % vnc_port)
+            f.write('RemoteDisplay.vnc.key = "%s"' % vnc_passwd)
+        if mac_address:
+            f.write('\nethernet0.addressType = "static"\n')
+            f.write('ethernet0.address = "%s"' % mac_address)
+        else:
+            f.write('\nethernet0.addressType = "generated"')
+        if hw_model:
+            f.write('\nhw.model = "%s"' % hw_model)
+        if serial_number:
+            f.write('\nserialNumber = "%s"' % serial_number)
+        if serial_format:
+            f.write('\nSMBIOS.use12CharSerialNumber = "TRUE"')
+        if shared_folder:
+            f.write('\nsharedFolder0.present = "true"\n')
+            f.write('sharedFolder0.enabled = "true"\n')
+            f.write('sharedFolder0.readAccess = "true"\n')
+            f.write('sharedFolder0.writeAccess = "true"\n')
+            f.write('sharedFolder0.hostPath = "%s"\n' % shared_folder)
+            f.write('sharedFolder0.guestName = "-vfuse"\n')
+            f.write('sharedFolder0.expiration = "never"\n')
+            f.write('sharedfolder.maxnum = "1"')
+    return vmx
+
+def generic_packer_template():
+    '''Returns a baseline packer template'''
+    d = {
+        'builders': [
+            {
+                'type': 'vmware-vmx',
+                'source_path': '',
+                'ssh_username': 'vagrant',
+                'ssh_password': 'vagrant',
+                'ssh_port': '22',
+                'ssh_wait_timeout': '10000s',
+                'tools_upload_flavor': 'darwin',
+                'shutdown_command': 'sudo shutdown -h now'
+            }
+        ],
+        'min_packer_version': '0.8.6',
+        'post-processors': ['vagrant']
+    }
+    return OrderedDict(d)
+
+def populate_packer_template(path, template):
+    '''Creates a packer template file'''
+    if not os.path.exists(template):
+        print colored('File not found; creating generic one: %s' % template,
+                            'yellow')
+        d = generic_packer_template()
+    else:
+        with open(template, 'r') as f:
+            d = json.load(f, object_pairs_hook=OrderedDict)
+    d['builders'][0]['source_path'] = path
+    with open(template, 'w') as f:
+        json.dump(d, f, indent=4, separators=(',', ': '))
+    set_perms(template)
+
+def main():
+    '''Main method'''
+    parser = argparse.ArgumentParser(description='Create and monitor VM from source DMG.')
+    parser.add_argument('-i', '--input', help='/path/to/dmg')
+    parser.add_argument('-o', '--output', help='/path/to/output/dir')
+    parser.add_argument('-n', '--name', help='Use a custom name')
+    parser.add_argument('-w', '--hw-version', help='VMware hardware version',
+                        type=int)
+    parser.add_argument('-m', '--mem-size', help='Memory Size in MB',
+                        type=int)
+    parser.add_argument('-t', '--template', help='Use a template')
+    parser.add_argument('-e', '--esx',
+                        help='Create pre-allocated ESX-type VMDK',
+                        action='store_true')
+    parser.add_argument('-p', '--packer', help='Populate a packer template')
+    parser.add_argument('--start', nargs='?', const=randint(1000, 9999),
+                        help='Start monitoring of VM')
+    parser.add_argument('--stop', help='Stop monitoring of VM')
+    parser.add_argument('--reset', help='Reset monitored VM')
+    args = parser.parse_args()
+
+    if os.getuid() != 0 and not args.stop and not args.reset:
+        print colored('If you don\'t want to be prompted in the GUI for an ' \
+                        'admin password, run this script with sudo rights\n',
+                        'yellow')
+
+    # Instantiate variables
+    fusion_path = ''
+    source_dmg = ''
+    output_dir = os.getcwd()
+    output_name = 'osx-vm'
+    cached = False
+    hw_version = 12
+    mem_size = 2048
+    disk_type = 0
+    connection_type = 'nat'
+    mac_address = None
+    enable3d = False
+    vnc_port = None
+    vnc_passwd = None
+    hw_model = None
+    serial_number = None
+    shared_folder = None
+    packer_template = False
+
+    monitor_vm = False
+    job_id = None
+    downloaded = False
+    serial_format = False
+    dmg_name = ''
+    guest_os = ''
+
+    if not args.input and not args.template and not args.start \
+            and not args.stop and not args.reset:
+        parser.print_help()
+        sys.exit(1)
+
+    if args.input:
+        source_dmg = os.path.expanduser(args.input)
+
+    if args.output:
+        output_dir = os.path.expanduser(args.output)
+
+    if args.name:
+        output_name = args.name
+
+    if args.hw_version:
+        hw_version = args.hw_version
+    
+    if args.mem_size:
+        mem_size = args.mem_size
+
+    if args.esx:
+        disk_type = 4
+
+    if args.packer:
+        packer_template = args.packer
+
+    if args.start:
+        job_id = args.start
+        try:
+            monitor = VMXMonitor()
+        except NameError as err:
+            print colored(str(err), 'red')
+            print colored('Make sure vserv is installed.', 'red')
+            sys.exit(1)
+        monitor_vm = True
+
+    if args.stop:
+        job_id = args.stop
+        try:
+            monitor = VMXMonitor()
+        except NameError as err:
+            print colored(str(err), 'red')
+            print colored('Make sure vserv is installed.', 'red')
+            sys.exit(1)
+        vmx = monitor.job_to_vmx(job_id)
+        if not vmx:
+            print colored('Invalid Job ID.', 'red')
+            sys.exit(1)
+        monitor.set_stop(vmx)
+        if os.getuid() == 0:
+            set_perms(monitor.plist)
+        while True:
+            if not monitor.is_running(vmx):
+                break
+        print colored('Deleting: %s' % os.path.dirname(vmx), 'green')
+        monitor.delete_vm(vmx)
+        sys.exit(0)
+
+    if args.reset:
+        job_id = args.reset
+        try:
+            monitor = VMXMonitor()
+        except NameError as err:
+            print colored(str(err), 'red')
+            print colored('Make sure vserv is installed.', 'red')
+            sys.exit(1)
+        vmx = monitor.job_to_vmx(job_id)
+        if not vmx:
+            print colored('Invalid Job ID.', 'red')
+            sys.exit(1)
+        monitor.set_reset(vmx)
+        if os.getuid() == 0:
+            set_perms(monitor.plist)
+        sys.exit(0)
+
+    if args.template:
+        # Use template-defined keys, otherwise use defaults defined above.
+        d = import_template(args.template)
+        if d.get('fusion_path'):
+            fusion_path = os.path.expanduser(d['fusion_path'])
+        if not d.get('source_dmg'):
+            parser.print_help()
+            sys.exit(1)
+        else:
+            source_dmg = os.path.expanduser(d['source_dmg'])
+        if d.get('cache'):
+            cached = d['cache']
+            if 'http' in source_dmg and cached:
+                cache_dir = os.path.join(os.getenv('HOME'), '.vfuse')
+                if not os.path.exists(cache_dir):
+                    os.mkdir(cache_dir)
+                dmg_name = os.path.basename(source_dmg)
+                (source_dmg, downloaded, cached) = get_source_dmg(source_dmg, dmg_name, cache_dir)
+        if d.get('output_dir'):
+            output_dir = os.path.expanduser(d['output_dir'])
+        if d.get('output_name'):
+            output_name = d['output_name']
+        if d.get('hw_version'):
+            hw_version = int(d['hw_version'])
+        if d.get('mem_size'):
+            mem_size = int(d['mem_size'])
+        if d.get('disk_type'):
+            disk_type = int(d['disk_type'])
+        if d.get('packer_template'):
+            packer_template = d['packer_template']
+        if d.get('bridged'):
+            connection_type = 'bridged'
+        if d.get('mac_address'):
+            mac_address = d['mac_address']
+        if d.get('enable3d'):
+            enable3d = True
+        if d.get('vnc_port'):
+            vnc_port = int(d['vnc_port'])
+        if d.get('vnc_passwd'):
+            vnc_passwd = d['vnc_passwd']
+        if d.get('hw_model'):
+            hw_model = d['hw_model']
+        if d.get('serial_number'):
+            serial_number = d['serial_number']
+        if d.get('shared_folder'):
+            shared_folder = os.path.expanduser(d['shared_folder'])
+
+    mount_point, disk_id = mount_dmg(source_dmg)
+
+    os_vers = get_osvers(mount_point)
+    os_rev = int(os_vers.split('.')[1])
+    if os_rev <= 8:
+        serial_format = True
+    if (os_rev < 7) or (os_rev > 12):
+        print colored('This OS X version is not supported: %s' % os_vers, 'red')
+        unmount_dmg(mount_point)
+        sys.exit(1)
+    # 10.7 (darwin11-64) requires virtualHW.version 8
+    # 10.8 (darwin12-64) requires virtualHW.version 9
+    # 10.9 (darwin13-64) requires virtualHW.version 10
+    # 10.10 (darwin14-64) requires virtualHW.version 11
+    # 10.11 (darwin15-64) requires virtualHW.version 12
+    if os_rev + 1 > hw_version:
+        print colored('VMware hardware version %d does not officially ' \
+                      'support 10.%d' % (hw_version, os_rev), 'yellow')
+    guest_os = 'darwin%d-64' % (os_rev + 4)
+
+    vmpath = create_vmdk(
+                        output_dir,
+                        output_name,
+                        disk_id,
+                        disk_type,
+                        fusion_path
+                    )
+    vmx = create_vmx(
+                    vmpath,
+                    output_name,
+                    guest_os,
+                    hw_version,
+                    mem_size,
+                    connection_type,
+                    enable3d,
+                    vnc_port,
+                    vnc_passwd,
+                    mac_address,
+                    hw_model,
+                    serial_number,
+                    serial_format,
+                    shared_folder
+                )
+    unmount_dmg(disk_id)
+    if os.getuid() == 0:
+        set_perms(vmpath)
+
+    if packer_template:
+        print colored('Generating packer template: %s' % packer_template, 'green')
+        populate_packer_template(vmpath, packer_template)
+
+    if monitor_vm:
+        monitor.set_start(str(vmx), str(job_id))
+        if os.getuid() == 0:
+            set_perms(monitor.plist)
+        print colored('Adding monitoring for %s' % vmx, 'green')
+    else:
+        print colored('VMware Fusion VM created at %s' % vmpath, 'green')
+
+    if downloaded:
+        if not cached:
+            print colored('Caching %s' % dmg_name, 'green')
+            shutil.move(source_dmg, cache_dir)
+            if os.getuid() == 0:
+                set_perms(cache_dir)
+    
+if __name__ == '__main__':
+    main()

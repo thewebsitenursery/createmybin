@@ -1,0 +1,14 @@
+#!/bin/bash
+# Removes all global NODE packages
+
+clear
+echo "Removes all global NODE packages in 5 seconds. Press ctrl+c to cancel."
+sleep 5
+echo ""
+echo "OK here we go"
+echo ""
+sudo -v
+sudo npm list -g --depth=0. | awk -F ' ' '{print $2}' | awk -F '@' '{print $1}' | sudo xargs npm remove -g;
+echo ""
+echo "npm and all node packages have been removed. To reinstall npm type: instalnpm into terminal"
+echo ""

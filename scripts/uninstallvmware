@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# uninstall vmware and all associated files
+
+clear
+echo ""
+echo "This script will uninstall Vmware fusion and all associated files"
+echo "You have 5 seconds to cancel by pressing ctrl+c"
+echo ""
+sleep 5
+echo "Ok here we go"
+sleep 2
+
+sudo rm -rf  "/Applications/VMware Fusion.app"
+sudo rm -rf  "/Library/Application Support/VMware"
+sudo rm -rf  "/Library/Application Support/VMware Fusion"
+sudo rm -rf  "/Library/Preferences/VMware Fusion"
+sudo rm -rf  "/private/var/root/Library/Logs/VMware"
+sudo rm -rf  "/private/var/db/vmware"
+sudo rm -rf  "/Library/Logs/VMware/"
+sudo rm -rf  "/private/var/run/vmware"
+sudo rm -rf  "/private/var/run/VMware Fusion Services.lock"
+sudo rm -rf  "/private/var/run/VMware Fusion Services.sock"
+sudo rm -rf  "/private/var/root/Library/Preferences/VMware Fusion"
+sudo rm -rf  "~/Library/Application Support/VMware Fusion"
+sudo rm -rf  "~/Library/Caches/com.vmware.fusion"
+sudo rm -rf  "~/Library/Preferences/VMware Fusion"
+sudo rm -rf  "~/Library/Logs/VMware"
+sudo rm -rf  "~/Library/Preferences/VMware Fusion"
+sudo rm -rf  "~/Library/Preferences/com.vmware.fusion.LSSharedFileList.plist"
+sudo rm -rf  "~/Library/Preferences/com.vmware.fusion.plist"
+sudo rm -rf  "~/Library/Preferences/com.vmware.fusionStartMenu.plist"
+sudo rm -rf  "~/Library/Preferences/com.vmware.fusion.LSSharedFileList.plist"
+sudo rm -rf  "~/Library/Preferences/com.vmware.fusion.LSSharedFileList.plist.lockfile"
+sudo rm -rf  "~/Library/Preferences/com.vmware.fusion.plist"
+sudo rm -rf  "~/Library/Preferences/com.vmware.fusion.plist.lockfile"
+sudo rm -rf  "~/Library/Preferences/com.vmware.fusionDaemon.plist"
+sudo rm -rf  "~/Library/Preferences/com.vmware.fusionDaemon.plist.lockfile"
+sudo rm -rf  "~/Library/Preferences/com.vmware.fusionStartMenu.plist"
+sudo rm -rf  "~/Library/Preferences/com.vmware.fusionStartMenu.plist.lockfile"
+
+echo "All Done"
+echo "Probably wise to do a reboot now"

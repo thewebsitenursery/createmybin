@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# This script sets your home directory and /usr/local default permissions
+# Ask for the administrator password upfront
+sudo -v
+echo ""
+echo "Setting corect permsissions for home directory, /opt and /usr/local/directory "
+echo "What is your username?"
+read input_variable
+echo "Thank-you: $input_variable"
+sudo chown -R "$input_variable" /Users"$input_variable"
+sudo chmod -R 700 /Users/"$input_variable"
+sudo chown -R "$input_variable" /usr/local
+sudo chmod -R 700 /usr/local
+sudo chown -R "$input_variable" /opt
+sudo chmod -R 700 /opt
+
+echo ""
+echo "All done"
+echo "Permisions of your home dirctory are as follows:"
+ls -las /Users/"$input_variable"
+echo ""
+echo "Permission of the /opt directory is as follows:"
+ls -las /opt
+echo ""
+echo "Permission of the /usr/local directory is as follows:"
+ls -las /usr/local

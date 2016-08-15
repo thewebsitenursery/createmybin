@@ -1,0 +1,7 @@
+#!/bin/bash
+#this turns off ssh server from the command line, disabling remote log in
+
+sudo -v
+sudo launchctl unload -w /System/Library/LaunchDaemons/ssh.plist
+echo ""
+echo "ssh off"

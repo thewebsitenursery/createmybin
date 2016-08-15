@@ -1,0 +1,8 @@
+#!/bin/bash
+
+## Creates a HTTP tunnel to thewsn.localtunnel.me
+echo "This should create a tunnel to your local websever"
+echo " "
+echo "https://thewsn.localtunnel.me should now be accessable"
+
+nohup lt -s thewsn -p 80 > /dev/null &

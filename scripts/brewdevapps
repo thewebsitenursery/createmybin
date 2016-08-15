@@ -1,0 +1,82 @@
+#!/bin/bash
+# Install command-line tools using Homebrew.
+
+# Ask for the administrator password upfront.
+sudo -v
+
+# Check for Homebrew,
+# Install if we don't have it
+if test ! $(which brew); then
+  echo "Installing homebrew..."
+  ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+fi
+
+# Make sure we’re using the latest Homebrew.
+brew update
+
+# Install usefull packages
+brew install ack
+brew install bash-completion
+brew install cairo
+brew install dark-mode
+brew install detox
+brew install docker-completion
+brew install fdupes
+brew install ffmpeg
+brew install fftw
+brew install fontconfig
+brew install freetype
+brew install gdbm
+brew install gdk-pixbuf
+brew install gettext
+brew install giflib
+brew install git
+brew install glib
+brew install gobject-introspection
+brew install harfbuzz
+brew install jpeg
+brew install lame
+brew install libcroco
+brew install libexif
+brew install libffi
+brew install libgsf
+brew install libpng
+brew install librsvg
+brew install libtiff
+brew install little-cms 
+brew install lynx
+brew install m-cli
+brew install mongodb
+brew install nmap
+brew install node
+brew install openjpeg
+brew install openssl
+brew install orc
+brew install pango
+brew install pcre
+brew install pixman
+brew install pkg-config
+brew install poppler
+brew install pv
+brew install py cairo
+brew install pygobject 
+brew install python
+brew install python 
+brew install readline
+brew install rename
+brew install shellcheck
+brew install speedtest_cli
+brew install sqlite
+brew install ssh-copy-id
+brew install tree
+brew install vips
+brew install wget
+brew install x   
+brew install xvid
+brew install xz
+brew install youtube-dl
+
+
+
+# Remove outdated versions from the cellar.
+brew cleanup

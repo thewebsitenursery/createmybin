@@ -1,0 +1,3 @@
+m firewall status
+m firewall enable
+say "Firewall Enabled"

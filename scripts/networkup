@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# Sets all network connections up
+
+echo ""
+echo "setting all network connections up"
+sudo -v
+sleep 2
+sudo ifconfig en0 up
+sudo ifconfig en1 up
+sudo ifconfig en2 up
+sudo ifconfig p2p0 up
+sudo ifconfig awdl0 up
+sudo ifconfig bridge0 up
+sudo ifconfig ipsec up
+sudo ifconfig en4 up
+
+echo  ""
+echo "these network connections are up:"
+echo ""
+sudo ifconfig -lu
