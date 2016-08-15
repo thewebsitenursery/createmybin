@@ -7,20 +7,21 @@
 #get sudo upfront
 sudo -v
 echo ''
-
+echo 'please confirm your username I am pretty sure your are:' $USER 'but want to be sure'
+read $UNNAME
 # backup ~/.bin if it already exists
 
-test -d "/Users/$USER/.bin" && mv "/Users/$USER/.bin" "/Users/$USER/.bin_old" && echo 'Backed up your old ~/.bin to ~/.bin_old' || echo 'No need to move old ~/.bin as it does not exist'
+test -d "/Users/$UNNAME/.bin" && sud mv /Users/$UNNAME/.bin /Users/$UNNAME/.bin_old && echo 'Backed up your old ~/.bin to ~/.bin_old' || echo 'No need to move old ~/.bin as it does not exist'
 
 # pause for 2 seconds
 sleep 2
 
 # create new ~/.bin
 
-mkdir "/Users/$USER/.bin"
+mkdir "/Users/$UNNAME/.bin"
 echo ''
 echo 'Copying the scripts to ~/.bin'
-cp -a scripts/* /Users/$USER/.bin/
+sudo cp -a scripts/* /Users/$UNNAME/.bin/
 echo ''
 
 # pause for 2 seconds
@@ -31,21 +32,21 @@ sleep 2
 ############################
 
 # if ~/.bash_profile exists then it backit up
-test -d "/Users/$USER/.bash_profile" && mv "/Users/$USER/.bash_profile" "/Users/$USER/.bash_profile_old" && echo 'Backed up your old ~/.bash_profile to ~/.bash_profile_old' || echo 'No need to move old ~/.bash_profile as it does not exist'
+test -d "/Users/$UNNAME/.bash_profile" && sudo mv /Users/$UNNAME/.bash_profile /Users/$UNNAME/.bash_profile_old && echo 'Backed up your old ~/.bash_profile to ~/.bash_profile_old' || echo 'No need to move old ~/.bash_profile as it does not exist'
 
-# Copy the bash_profile-template to /Users/$USER/.bash_profile
-cp scripts/bash_profile-template /Users/$USER/.bash_profile
+# Copy the bash_profile-template to /Users/$UNNAME/.bash_profile
+sudo cp scripts/bash_profile-template /Users/$UNNAME/.bash_profile
 
 # Pause for 2 seconds
 sleep 2
 
 # Set correct permissions
 echo ''
-echo 'Setttng permissions so that $USER is owner and can read, write and execute'
-sudo chown -R $USER "/Users/$USER/.bin"
-sudo chmod -R 750 "/Users/$USER/.bin"
-sudo chown $USER "/Users/$USER/.bash_profile"
-sudo chmod 750 "/Users/$USER/.bash_profile"
+echo 'Setttng permissions so that $UNNAME is owner and can read, write and execute'
+sudo chown -R $UNNAME "/Users/$UNNAME/.bin"
+sudo chmod -R 750 "/Users/$UNNAME/.bin"
+sudo chown $UNNAME "/Users/$UNNAME/.bash_profile"
+sudo chmod 750 "/Users/$UNNAME/.bash_profile"
 echo ''
 sleep 2
 echo '***********************************************************************************'
