@@ -6,7 +6,7 @@ alias ls="ls -las -h"
 
 
 ## My Paths
-export PATH="/Users/alistair/.bin:$PATH"
+export PATH="/Users/$USER/.bin:$PATH"
 export PATH="/usr/local/bin:$PATH"
 export PATH="/usr/local/sbin:$PATH"
 
@@ -78,7 +78,7 @@ alias nordp="sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Con
 alias rdpoff="sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -activate -configure -access -off"
 
 # Activate Remote Desktop Sharing, enable access privileges for the users "admin", grant full privileges for the users "admin", restart ARD Agent and Menu extra:
-alias rdpalistair="sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -activate -configure -access -on -users alistair -privs -all -restart -agent -menu"
+alias rdpadmin="sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -activate -configure -access -on -users $USER -privs -all -restart -agent -menu"
 
 # Docker Aliases
 
@@ -93,25 +93,25 @@ alias drm="docker rm"
 alias ssh-amsawslinus='cd ~/.ssh && ssh -i "amsawslinux.pem" ubuntu@amsawslinux.tk'
 
 # SSH TO AMAZON awsaws.tk
-alias ssh-amsaws='ssh alistair@amsaws.tk'
+alias ssh-amsaws="ssh $USER@amsaws.tk"
 
 # Mount AMAZON amsaws.tk
 # Must have MacFuse install for this to work
-alias mount-amsaws='mkdir ~/amsaws && sshfs alistair@amsaws.tk:/home/alistair/ /Users/alistair/amsaws/'
+alias mount-amsaws="mkdir ~/amsaws && sshfs $USER@amsaws.tk:/home/$USER/ /Users/$USER/amsaws/"
 
 # Unmount AMAZON amsaws.tk from desktop
 alias umount-amsaws='diskutil umount ~/amsaws && rm -rf ~/amsaws'
 
 
 # AMS AZURE ALIAS
-# alias amsazure="ssh alistair@13.92.122.236"
+# alias amsazure="ssh $USER@13.92.122.236"
 
 # WSNLINUX.tk on azuer ssh alias
-alias ssh-wsnlinx="ssh alistair@wsnlinux.tk"
+alias ssh-wsnlinx="ssh $USER@wsnlinux.tk"
 
 
 # Docker Digital Ocean Alias
-# alias ssh-ddo="ssh alistair@thewebsitenursery.host"
+# alias ssh-ddo="ssh $USER@thewebsitenursery.host"
 
 # Mount or Unmount Webfaction Hosting to ~/Sites/Webfaction
 # Mount webfaction hosting to ~/Webfaction
@@ -119,7 +119,7 @@ alias ssh-wsnlinx="ssh alistair@wsnlinux.tk"
 alias mount-wf='mkdir ~/Webfaction && sudo sshfs -o allow_other,defer_permissions "alinichols@dev.thewebsitenursery.com:/home/alinichols/" ~/Webfaction'
 
 # Unmount webfaction hosting 
-alias umount-wf='diskutil umount /Users/alistair/Desktop/Webfaction && rm -rf ~/Webfaction'
+alias umount-wf='diskutil umount /Users/$USER/Desktop/Webfaction && rm -rf ~/Webfaction'
 
 # SSH Webfaction Alias
 alias ssh-wf='ssh alinichols@dev.thewebsitenursery.com'
